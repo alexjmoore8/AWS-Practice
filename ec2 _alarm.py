@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-
+#!/usr/env/bin python3
 import boto3
 
 DRYRUN = False
@@ -29,14 +28,28 @@ def Create_EC2(ec2_client, AMI):
         InstanceType = 't2.micro',
         MaxCount = 1,
         MinCount = 1,
-        DryRun=DRYRUN
+        DryRun=DRYRUN,
+        SecurityGroups = ['WebSG'],
+        UserData='''#!/bin/bash -ex
+            # Updated to use Amazon Linux 2
+            yum -y update
+            yum -y install httpd php mysql php-mysql
+            /usr/bin/systemctl enable httpd
+            /usr/bin/systemctl start httpd
+            cd /var/www/html
+            wget https://aws-tc-largeobjects.s3-us-west-2.amazonaws.com/CUR-TF-100-ACCLFO-2/lab6-scaling/lab-app.zip
+            unzip lab-app.zip -d /var/www/html/
+            chown apache:root /var/www/html/rds.conf.php
+        '''
     )
     return response['Instances'][0]['InstanceId']
+
+
+
 def main():
     client = boto3.client('ec2')
     AMI = Get_Image(client)
     instance_id = Create_EC2(client,AMI)
-
     ec2_instance = boto3.resource('ec2')
     ec2 = ec2_instance.Instance(instance_id)
     tag = ec2.create_tags(
@@ -57,11 +70,11 @@ def main():
     print(ec2.public_ip_address)
     print(ec2.tags)
     print(f"Instance is {ec2.state['Name']}")
-    ec2.terminate()
-    print("Waiting for instance to terminate...")
-    print(f"Instance is {ec2.state['Name']}")
-    ec2.wait_until_terminated()
-    print("Instance is now terminated...")
+    #ec2.terminate()
+    #print("Waiting for instance to terminate...")
+    #print(f"Instance is {ec2.state['Name']}")
+    #ec2.wait_until_terminated()
+    #print("Instance is now terminated...")
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import boto3
 
 DRYRUN = False
@@ -44,7 +43,7 @@ def main():
         Tags=[
             {
                 'Key': 'Name',
-                'Value': 'Alex-instance'
+                'Value': 'Aaron'
             },
         ]
     )
