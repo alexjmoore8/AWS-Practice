@@ -1,4 +1,7 @@
-import boto3, json, datetime
+#!/usr/bin/env python
+import boto3
+import json
+import datetime
 
 client = boto3.client("s3")
 
